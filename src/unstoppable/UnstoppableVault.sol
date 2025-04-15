@@ -85,6 +85,7 @@ contract UnstoppableVault is IERC3156FlashLender, ReentrancyGuard, Owned, ERC462
         if (convertToShares(totalSupply) != balanceBefore) revert InvalidBalance(); // enforce ERC4626 requirement
 
         // transfer tokens out + execute callback on receiver
+        // @audit transfer is done before fee calculation, meaning that the amount of the flashloan will already be out of the contract when the calculation happens
         ERC20(_token).safeTransfer(address(receiver), amount);
 
         // callback must return magic value, otherwise assume it failed
@@ -97,6 +98,7 @@ contract UnstoppableVault is IERC3156FlashLender, ReentrancyGuard, Owned, ERC462
         }
 
         // pull amount + fee from receiver, then pay the fee to the recipient
+        // @audit-ok no checks on return value, though these functions might revert => it is checked in the safeTransfer functions of the safeTransferLib
         ERC20(_token).safeTransferFrom(address(receiver), address(this), amount + fee);
         ERC20(_token).safeTransfer(feeRecipient, fee);
 
@@ -122,6 +124,7 @@ contract UnstoppableVault is IERC3156FlashLender, ReentrancyGuard, Owned, ERC462
 
     // Allow owner to execute arbitrary changes when paused
     function execute(address target, bytes memory data) external onlyOwner whenPaused {
+        // @audit delegatecall!
         (bool success,) = target.delegatecall(data);
         require(success);
     }
