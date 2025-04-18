@@ -84,6 +84,8 @@ contract NaiveReceiverPool is Multicall, IERC3156FlashLender {
     }
 
     function _msgSender() internal view override returns (address) {
+        // @audit looks like we can configure msg.data for the address here as long as we use trustedForwarder 
+        // @note msg.data should be the deployer address converted to bytes20 followed by 20 bytes
         if (msg.sender == trustedForwarder && msg.data.length >= 20) {
             return address(bytes20(msg.data[msg.data.length - 20:]));
         } else {
