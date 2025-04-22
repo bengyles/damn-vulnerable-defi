@@ -25,6 +25,8 @@ contract TrusterLenderPool is ReentrancyGuard {
         uint256 balanceBefore = token.balanceOf(address(this));
 
         token.transfer(borrower, amount);
+        
+        // @audit we can approve the token here so we can take it out later, using a malicious smart contract we can do this in 1 transaction by doing the attack in the constructor
         target.functionCall(data);
 
         if (token.balanceOf(address(this)) < balanceBefore) {
