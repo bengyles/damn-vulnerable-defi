@@ -37,6 +37,7 @@ contract SideEntranceLenderPool {
 
         IFlashLoanEtherReceiver(msg.sender).execute{value: amount}();
 
+        // @audit if we take a flashloan and deposit this balance in this contract this check will not revert the loan and we can withdraw the funds later
         if (address(this).balance < balanceBefore) {
             revert RepayFailed();
         }
