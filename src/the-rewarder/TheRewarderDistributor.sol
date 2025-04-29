@@ -90,11 +90,15 @@ contract TheRewarderDistributor {
             uint256 wordPosition = inputClaim.batchNumber / 256;
             uint256 bitPosition = inputClaim.batchNumber % 256;
 
+            // @audit executed when the token is not equal to the token in the array because it's address(0)
+            // @audit for all other loops except the last one we can omit the setClaimed function by just making sure token and inputTokens[inputClaim.tokenIndex] are equal
+            // this way only in the last loop will the setClaimed function be called and actually save this claim so it cannot be claimed again
             if (token != inputTokens[inputClaim.tokenIndex]) {
+                // @audit token is address(0) in the first loop
                 if (address(token) != address(0)) {
                     if (!_setClaimed(token, amount, wordPosition, bitsSet)) revert AlreadyClaimed();
                 }
-
+                
                 token = inputTokens[inputClaim.tokenIndex];
                 bitsSet = 1 << bitPosition; // set bit at given position
                 amount = inputClaim.amount;
