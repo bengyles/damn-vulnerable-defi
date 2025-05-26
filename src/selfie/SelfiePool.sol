@@ -41,6 +41,7 @@ contract SelfiePool is IERC3156FlashLender, ReentrancyGuard {
     }
 
     function flashFee(address _token, uint256) external view returns (uint256) {
+        // @audit flashFee is 0
         if (address(token) != _token) {
             revert UnsupportedCurrency();
         }

