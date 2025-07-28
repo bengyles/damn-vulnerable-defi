@@ -90,6 +90,8 @@ contract TrustfulOracle is AccessControlEnumerable {
             uint256 rightPrice = prices[prices.length / 2];
             return (leftPrice + rightPrice) / 2;
         } else {
+            // @audit since we have 3 sources here we probably land here
+            // @note if the length is 3 and we divide by 2 this would result in 1 as the decimals are rounded down
             return prices[prices.length / 2];
         }
     }

