@@ -58,6 +58,7 @@ contract PuppetPool is ReentrancyGuard {
 
     function _computeOraclePrice() private view returns (uint256) {
         // calculates the price of the token in wei according to Uniswap pair
+        // @audit do we need to do 10 ** 18 here? Looks like we might end up with too many decimals
         return uniswapPair.balance * (10 ** 18) / token.balanceOf(uniswapPair);
     }
 }
