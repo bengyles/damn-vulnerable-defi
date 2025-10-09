@@ -37,6 +37,7 @@ contract PuppetV2Pool {
         uint256 amount = calculateDepositOfWETHRequired(borrowAmount);
 
         // Take the WETH
+        // @audit-ok if this silently fails we don't need to send any tokens in order to get the tokens from the pool => looks ok though
         _weth.transferFrom(msg.sender, address(this), amount);
 
         // internal accounting
@@ -57,6 +58,7 @@ contract PuppetV2Pool {
         (uint256 reservesWETH, uint256 reservesToken) =
             UniswapV2Library.getReserves({factory: _uniswapFactory, tokenA: address(_weth), tokenB: address(_token)});
 
+        // @audit the result of the quote function could be vulnerable to a flash loan attack
         return UniswapV2Library.quote({amountA: amount * 10 ** 18, reserveA: reservesToken, reserveB: reservesWETH});
     }
 }
