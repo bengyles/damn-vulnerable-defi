@@ -72,6 +72,7 @@ contract FreeRiderNFTMarketplace is ReentrancyGuard {
 
         offers[tokenId] = price;
 
+        // @audit is this where the offerscount gets increased?
         assembly {
             // gas savings
             sstore(0x02, add(sload(0x02), 0x01))
@@ -94,10 +95,12 @@ contract FreeRiderNFTMarketplace is ReentrancyGuard {
             revert TokenNotOffered(tokenId);
         }
 
+        // @audit we only need to pay for 1 token when buying many tokens because msg.value is the same for all loops
         if (msg.value < priceToPay) {
             revert InsufficientPayment();
         }
 
+        // @audit offersCount could be 0 which could result in an underflow which is not caught because this shorthand method means "unchecked"
         --offersCount;
 
         // transfer from seller to buyer
@@ -105,6 +108,7 @@ contract FreeRiderNFTMarketplace is ReentrancyGuard {
         _token.safeTransferFrom(_token.ownerOf(tokenId), msg.sender, tokenId);
 
         // pay seller using cached token
+        // @audit tokens will be sent to the buyer!
         payable(_token.ownerOf(tokenId)).sendValue(priceToPay);
 
         emit NFTBought(msg.sender, tokenId, priceToPay);

