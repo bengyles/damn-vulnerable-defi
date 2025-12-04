@@ -65,6 +65,7 @@ contract WalletRegistry is IProxyCreationCallback, Ownable {
      *          setting the registry's address as the callback.
      */
     function proxyCreated(SafeProxy proxy, address singleton, bytes calldata initializer, uint256) external override {
+        // @note this check can easily pass as long as there are funds in the contract
         if (token.balanceOf(address(this)) < PAYMENT_AMOUNT) {
             // fail early
             revert NotEnoughFunds();
@@ -91,7 +92,7 @@ contract WalletRegistry is IProxyCreationCallback, Ownable {
         if (threshold != EXPECTED_THRESHOLD) {
             revert InvalidThreshold(threshold);
         }
-
+        // @note I believe we need to use the existing owners here so they will not be beneficiaries anymore, the payment will go to the wallet address anyway
         address[] memory owners = Safe(walletAddress).getOwners();
         if (owners.length != EXPECTED_OWNERS_COUNT) {
             revert InvalidOwnersCount(owners.length);
