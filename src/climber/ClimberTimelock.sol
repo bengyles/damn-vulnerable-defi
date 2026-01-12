@@ -87,10 +87,12 @@ contract ClimberTimelock is ClimberTimelockBase {
 
         bytes32 id = getOperationId(targets, values, dataElements, salt);
 
+        // @audit since this contract is also the admin, anyone can call functions to this contract to schedule, delay, set role permissions and possibly even directly execute transfers!
         for (uint8 i = 0; i < targets.length; ++i) {
             targets[i].functionCallWithValue(dataElements[i], values[i]);
         }
 
+        // @audit state is checked after calling the functions, so we can schedule it first by calling the schedule function (since this contract is also the admin we may have to set the proposer as well), execute an upgrade for the vault (which sets the attacker as the sweeper) 
         if (getOperationState(id) != OperationState.ReadyForExecution) {
             revert NotReadyForExecution(id);
         }

@@ -15,7 +15,7 @@ import {CallerNotSweeper, InvalidWithdrawalAmount, InvalidWithdrawalTime} from "
 /**
  * @dev To be deployed behind a proxy following the UUPS pattern. Upgrades are to be triggered by the owner.
  */
-contract ClimberVault is Initializable, OwnableUpgradeable, UUPSUpgradeable {
+contract NewClimberVault is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     uint256 private _lastWithdrawalTimestamp;
     address private _sweeper;
 
@@ -37,7 +37,6 @@ contract ClimberVault is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         __UUPSUpgradeable_init();
 
         // Deploy timelock and transfer ownership to it
-        // @audit timelock has ownership of this contract so we could execute functions in here, for example _authorizeUpgrade to upgrade this contract
         transferOwnership(address(new ClimberTimelock(admin, proposer)));
 
         _setSweeper(sweeper);
@@ -60,8 +59,8 @@ contract ClimberVault is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     }
 
     // Allows trusted sweeper account to retrieve any tokens
-    function sweepFunds(address token) external onlySweeper {
-        SafeTransferLib.safeTransfer(token, _sweeper, IERC20(token).balanceOf(address(this)));
+    function sweepFunds(address token, address receiver) external {
+        SafeTransferLib.safeTransfer(token, receiver, IERC20(token).balanceOf(address(this)));
     }
 
     function getSweeper() external view returns (address) {
