@@ -45,6 +45,8 @@ contract WalletDeployer {
      * @notice Allows the caller to deploy a new Safe account and receive a payment in return.
      *         If the authorizer is set, the caller must be authorized to execute the deployment
      */
+     // @audit I have a suspicion we are going to need this function because it sends tokens to the msg.sender
+     // this function creates a new safe proxy when the correct aim is supplied for the wat and num variables. When we get the correct variables here we can drain the contract and deploy the correct safeProxy at the same time
     function drop(address aim, bytes memory wat, uint256 num) external returns (bool) {
         if (mom != address(0) && !can(msg.sender, aim)) {
             return false;

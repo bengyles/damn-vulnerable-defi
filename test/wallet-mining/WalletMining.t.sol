@@ -24,6 +24,7 @@ import {
     SAFE_SINGLETON_FACTORY_ADDRESS,
     SAFE_SINGLETON_FACTORY_CODE
 } from "./SafeSingletonFactory.sol";
+import {HackWalletMining} from "./HackWalletMining.sol";
 
 contract WalletMiningChallenge is Test {
     address deployer = makeAddr("deployer");
@@ -157,7 +158,62 @@ contract WalletMiningChallenge is Test {
      * CODE YOUR SOLUTION HERE
      */
     function test_walletMining() public checkSolvedByPlayer {
-        
+        // @todo find correct initializer function and parameters
+        // @todo find correct saltNonce
+        // 13 seems to be the nonce but keeping this code to look back at later
+        uint256 nonce = 0;
+        for (uint256 saltNonce = 0; saltNonce < 100; saltNonce++) {
+            address[] memory owners = new address[](1);
+            owners[0] = user;
+            bytes memory initializer = abi.encodeCall(
+                Safe.setup,
+                (
+                    owners,
+                    1, // 1 is the threshold
+                    address(0),
+                    "",
+                    address(0),
+                    address(0),
+                    0,
+                    payable(address(0))
+                )
+            );
+            bytes32 salt = keccak256(
+                abi.encodePacked(keccak256(initializer), saltNonce)
+            );
+            bytes memory initCode = abi.encodePacked(
+                type(SafeProxy).creationCode,
+                uint256(uint160(address(singletonCopy)))
+            );
+            bytes32 guessBytes = keccak256(
+                abi.encodePacked(
+                    bytes1(0xff),
+                    address(proxyFactory),
+                    salt,
+                    keccak256(initCode)
+                )
+            );
+            address guess = address(uint160(uint256(guessBytes)));
+            if (guess == USER_DEPOSIT_ADDRESS) {
+                nonce = saltNonce;
+                console.log("saltNonce", saltNonce);
+                break;
+            }
+        }
+
+        console.log("nonce", nonce);
+
+        // we also need to create an attacker contract so we only need 1 transaction from the player account
+        // HackWalletMining hackContract = new HackWalletMining(
+        //     authorizer,
+        //     walletDeployer,
+        //     address(singletonCopy),
+        //     address(walletDeployer.cook()),
+        //     token,
+        //     ward,
+        //     user,
+        //     nonce
+        // );
     }
 
     /**

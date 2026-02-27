@@ -25,6 +25,7 @@ contract TransparentProxy is ERC1967Proxy {
         return who == upgrader;
     }
 
+    // @audit-info perhaps we need to upgrade the contract in order to extract funds? if so we either need to be the upgrader or do something in the super_fallback() function
     function _fallback() internal override {
         if (isUpgrader(msg.sender)) {
             require(msg.sig == bytes4(keccak256("upgradeToAndCall(address, bytes)")));
