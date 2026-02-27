@@ -17,3 +17,5 @@ bytecode_hash = "none"
 optimizer = true
 optimizer_runs = 200
 
+[fmt]
+line_length = 140

@@ -2,20 +2,10 @@
 pragma solidity =0.8.25;
 
 import {console} from "forge-std/Test.sol";
-import {
-    AuthorizerFactory,
-    AuthorizerUpgradeable,
-    TransparentProxy
-} from "../../src/wallet-mining/AuthorizerFactory.sol";
+import {AuthorizerFactory, AuthorizerUpgradeable, TransparentProxy} from "../../src/wallet-mining/AuthorizerFactory.sol";
 import {WalletDeployer} from "../../src/wallet-mining/WalletDeployer.sol";
-import {
-    Safe,
-    OwnerManager,
-    Enum
-} from "@safe-global/safe-smart-account/contracts/Safe.sol";
-import {
-    SafeProxy
-} from "@safe-global/safe-smart-account/contracts/proxies/SafeProxy.sol";
+import {Safe, OwnerManager, Enum} from "@safe-global/safe-smart-account/contracts/Safe.sol";
+import {SafeProxy} from "@safe-global/safe-smart-account/contracts/proxies/SafeProxy.sol";
 import "@openzeppelin/contracts/utils/Create2.sol";
 import {DamnValuableToken} from "../../src/DamnValuableToken.sol";
 
@@ -64,8 +54,8 @@ contract HackWalletMining {
 
         uint256 walletDeployerBalance = _token.balanceOf(address(_walletDeployer));
 
-       bool success = _walletDeployer.drop(USER_DEPOSIT_ADDRESS, initializer, nonce);
-       console.log("success", success);
+        bool success = _walletDeployer.drop(USER_DEPOSIT_ADDRESS, initializer, nonce);
+        console.log("success", success);
 
         // @todo move this code to the test file so we can easily use the paramters there
         // @todo find correct initializer function and parameters
@@ -75,17 +65,17 @@ contract HackWalletMining {
         // while(test == false && saltNum < 30000){
 
         //     salt = keccak256(abi.encodePacked(keccak256(initializer), saltNum));
-            
+
         //     predicted = Create2.computeAddress(salt, initCodeHash, _deployer);
         //     console.log("saltNum", saltNum);
-            
+
         //     saltNum++;
 
         //     if(predicted == USER_DEPOSIT_ADDRESS){
         //         test = true;
         //          // test = _walletDeployer.drop(USER_DEPOSIT_ADDRESS, initializer, saltNum);
         //     }
-            
+
         //     console.log("test", test);
         // }
 
@@ -95,6 +85,5 @@ contract HackWalletMining {
 
         // send the balance to the correct ward
         // _token.transfer(ward, walletDeployerBalance);
-        
     }
 }
